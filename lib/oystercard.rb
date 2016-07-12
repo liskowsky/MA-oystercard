@@ -10,7 +10,7 @@ class Oystercard
   end
 
   def top_up(amount)
-    fail "Oystercard's limit reached" if exceeds_limit?(amount)
+    fail "Over the limit!" if exceeds_limit?(amount)
     @balance = amount + @balance
   end
 
@@ -25,7 +25,7 @@ class Oystercard
   end
 
   def in_journey?
-    @entry_station
+    @entry_station != nil
   end
 
   private
