@@ -1,12 +1,15 @@
-#unitialized constant Oystercard (NameError)
 require 'oystercard'
 
 describe Oystercard do
 
-  context 'balance' do
-    it 'should initialize with 0' do
-      expect(subject.balance).to eq 0
-    end
+  subject(:oystercard) { described_class.new }
+
+  it "has a balance of 0" do
+    expect(subject.balance).to eq 0
+  end
+  it "adds money to current balance" do
+    subject.top_up(100)
+    expect(subject.balance).to eq 100
   end
 
 end
