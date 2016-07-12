@@ -5,8 +5,8 @@ class Oystercard
   DEFAULT_TOPUP = 10
   attr_reader :balance, :in_journey
 
-  def initialize
-    @balance = 0
+  def initialize(default = DEFAULT_TOPUP)
+    @balance = default
     @in_journey = false
   end
 

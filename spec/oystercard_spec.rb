@@ -4,38 +4,27 @@ describe Oystercard do
 
   subject(:oystercard) { described_class.new }
 
-
-  it "has a balance of 0" do
-    expect(subject.balance).to eq 0
-  end
-
-  it "adds money to current balance" do
-    subject.top_up 50
-    expect(subject.balance).to eq 50
-  end
-
-
-  context "When the default top-up is 10" do
-
-    before do
-      subject.top_up(Oystercard::DEFAULT_TOPUP)
+  describe "#Balance" do
+    context "when default balance is set" do
+      it "has a default balance" do
+        expect(subject.balance).to eq Oystercard::DEFAULT_TOPUP
+      end
+      it "adds money to current balance" do
+        subject.top_up 50
+        expect(subject.balance).to eq 60
+      end
+      it "deducts money from current balance" do
+        expect{ subject.touch_out 10 }.to change{ subject.balance }.by -10
+      end
+      it "raises error when oystercard exceeds #{Oystercard::MAX_LIMIT}" do
+        expect{ subject.top_up Oystercard::MAX_LIMIT }.to raise_error "Oystercard's limit reached"
+      end
+      it "deducts the minimum fare from current balance after the journey" do
+        subject.touch_in
+          expect{ subject.touch_out }.to change{ subject.balance }.by -Oystercard::MIN_FARE
+      end
     end
-
-
-  it "deducts money from current balance" do
-    expect{ subject.touch_out 10 }.to change{ subject.balance }.by -10
   end
-  it "raises error when oystercard exceeds 90 pounds" do
-    expect{ subject.top_up Oystercard::MAX_LIMIT }.to raise_error "Oystercard's limit reached"
-  end
-  it "deducts the minimum fare from current balance after the journey" do
-    subject.touch_in
-      expect{ subject.touch_out }.to change{ subject.balance }.by -Oystercard::MIN_FARE
-  end
-
-
-
-end
 
   describe "#Card usage" do
     context "when card has founds" do
