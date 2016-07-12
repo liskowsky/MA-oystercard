@@ -3,6 +3,9 @@ require 'oystercard'
 describe Oystercard do
 
   subject(:oystercard) { described_class.new }
+  let(:station) { double(:station) }
+
+  it { is_expected.to respond_to(:touch_in).with(1).argument }
 
   describe "#Balance" do
     context "when default balance is set" do
@@ -20,7 +23,7 @@ describe Oystercard do
         expect{ subject.top_up Oystercard::MAX_LIMIT }.to raise_error "Oystercard's limit reached"
       end
       it "deducts the minimum fare from current balance after the journey" do
-        subject.touch_in
+        subject.touch_in(station)
           expect{ subject.touch_out }.to change{ subject.balance }.by -Oystercard::MIN_FARE
       end
     end
@@ -33,13 +36,12 @@ describe Oystercard do
       end
       it { is_expected.to respond_to :touch_in }
       it { is_expected.to respond_to :touch_out }
-      it "in journey when touched in" do
-        subject.touch_in
-        expect(subject.in_journey).to eq true
+      xit "in journey when touched in" do
+        expect(subject.touch_in(station)).to be_in_journey
       end
-      it "not in journey when touched out" do
+      xit "not in journey when touched out" do
         subject.touch_out
-        expect(subject.in_journey).to eq false
+        expect(subject).not_to be_in_journey
       end
     end
     context "when card doesn't have founds" do
@@ -47,7 +49,7 @@ describe Oystercard do
         allow(subject).to receive(:no_founds?).and_return(true)
       end
       it "raises an error on touch in if the balance is below 1£" do
-        expect{ subject.touch_in }.to raise_error "Insufficient founds!"
+        expect{ subject.touch_in(station) }.to raise_error "Insufficient founds!"
       end
     end
   end
