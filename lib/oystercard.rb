@@ -16,8 +16,12 @@ MAX_LIMIT = 90
     self.balance = amount + balance
   end
 
+  def deduct(amount)
+    self.balance = balance - amount
+  end
+
   def exceeds_limit?(amount)
-   self.balance + amount > MAX_LIMIT
+    self.balance + amount > MAX_LIMIT
   end
 
 
