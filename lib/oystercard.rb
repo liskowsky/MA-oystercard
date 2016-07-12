@@ -1,6 +1,7 @@
 class Oystercard
 
   MAX_LIMIT = 90
+  MIN_FARE = 1
   attr_reader :balance, :in_journey
 
   def initialize
@@ -18,6 +19,7 @@ class Oystercard
   end
 
   def touch_in
+    fail "Insufficient founds!" if no_founds?
     @in_journey = true
   end
 
@@ -29,6 +31,10 @@ class Oystercard
 
   def exceeds_limit?(amount)
     @balance + amount > MAX_LIMIT
+  end
+
+  def no_founds?
+    @balance < MIN_FARE
   end
 
 end

@@ -21,18 +21,29 @@ describe Oystercard do
   end
 
   describe "#Card usage" do
-    it { is_expected.to respond_to :touch_in }
-    it { is_expected.to respond_to :touch_out }
-    it "in journey when touched in" do
-      subject.touch_in
-      expect(subject.in_journey).to eq true
+    context "when card has founds" do
+      before do
+        allow(subject).to receive(:no_founds?).and_return(false)
+      end
+      it { is_expected.to respond_to :touch_in }
+      it { is_expected.to respond_to :touch_out }
+      it "in journey when touched in" do
+        subject.touch_in
+        expect(subject.in_journey).to eq true
+      end
+      it "not in journey when touched out" do
+        subject.touch_out
+        expect(subject.in_journey).to eq false
+      end
     end
-    it "not in journey when touched out" do
-      subject.touch_out
-      expect(subject.in_journey).to eq false
+    context "when card doesn't have founds" do
+      before do
+        allow(subject).to receive(:no_founds?).and_return(true)
+      end
+      it "raises an error on touch in if the balance is below 1£" do
+        expect{ subject.touch_in }.to raise_error "Insufficient founds!"
+      end
     end
   end
-
-
 
 end
