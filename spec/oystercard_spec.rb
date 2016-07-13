@@ -2,66 +2,70 @@ require 'oystercard'
 
 describe Oystercard do
 
-  subject(:oystercard) { described_class.new }
   let(:station) { double(:station) }
-  let(:entry_station) { double(:station) }
-  let(:exit_station) { double(:station) }
-
-  it { is_expected.to respond_to(:touch_in).with(1).argument }
+  let(:station_2) { double(:station) }
+  let(:journey){ {:entry_station => station, :exit_station => station_2} }
+  default_topup = 10
 
   describe "#Balance" do
-    context "when default is #{Oystercard::DEFAULT_TOPUP}" do
-      it "is set as a default balance" do
-        expect(subject.balance).to eq Oystercard::DEFAULT_TOPUP
-      end
-      it "adds money to current balance" do
-        subject.top_up 1
-        expect(subject.balance).to eq Oystercard::DEFAULT_TOPUP + 1
-      end
-      it "raises error when oystercard exceeds #{Oystercard::MAX_LIMIT}" do
-        expect{ subject.top_up Oystercard::MAX_LIMIT }.to raise_error "Over the limit!"
-      end
-      it "deducts the minimum fare from current balance after the journey" do
-          expect{ subject.touch_out(station) }.to change{ subject.balance }.by -Oystercard::MIN_FARE
-      end
+
+    it 'returns the initial balance of 0' do
+      expect(subject.balance).to eq 0
     end
+
+    it "adds money to current balance" do
+      subject.top_up default_topup
+      expect(subject.balance).to eq default_topup
+    end
+
+    it "raises error when oystercard exceeds top up limit" do
+      expect{ subject.top_up (Oystercard::BALANCE_LIMIT + 1)}.to raise_error "Over the limit!"
+    end
+
+    it 'not be able to touch in when balance is below £1' do
+      expect{ subject.touch_in(station) }.to raise_error("Insufficient founds!")
+    end
+
   end
 
-  describe "#Touch in/out" do
-    context "when card has founds" do
-      before do
-        allow(subject).to receive(:no_founds?).and_return(false)
-      end
-      it { is_expected.to respond_to :touch_in }
-      it { is_expected.to respond_to :touch_out }
-      it "is in journey when touched in" do
-        subject.touch_in(station)
-        expect(subject.in_journey?).to be true
-      end
-      it "is not in journey when touched out" do
-        subject.touch_out(station)
-        expect(subject.in_journey?).to be false
-      end
+  describe "#Touch functionality in/out" do
+
+    before do
+      subject.top_up(default_topup)
+      subject.touch_in(station)
     end
-    context "when is out of founds" do
-      before do
-        allow(subject).to receive(:no_founds?).and_return(true)
-      end
-      it "raises an error on touch in if the balance is below 1£" do
-        expect{ subject.touch_in(station) }.to raise_error "Insufficient founds!"
-      end
+
+    it "should set card to in journey when touched in" do
+      expect(subject).to be_in_journey    end
+
+    it "should set card to NOT be in journey when touched out" do
+      subject.touch_out(station)
+      expect(subject).not_to be_in_journey
     end
+
+    it "is getting charged on touch out" do
+      expect{ subject.touch_out(station) }.to change{ subject.balance }.by -(Oystercard::MIN_FARE)
+    end
+
+    it "sets current station to nil on touch out" do
+      expect{ subject.touch_out(station) }.to change{ subject.station }.from(station).to(nil)
+    end
+
   end
 
-  describe "#Journey history" do
+  describe "#Journeys" do
+
     it "has an empty journey history" do
       expect(subject.journeys).to be_empty
     end
-    it "remembers journeys" do
-      subject.touch_in(entry_station)
-      subject.touch_out(exit_station)
-      expect(subject.journeys).to include(entry_station => exit_station)
+
+    it "stores entry and exit stations" do
+      subject.top_up(default_topup)
+      subject.touch_in(station)
+      subject.touch_out(station_2)
+      expect(subject.journeys).to include journey
     end
+
   end
 
 end
