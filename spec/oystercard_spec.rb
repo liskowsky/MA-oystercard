@@ -2,9 +2,9 @@ require 'oystercard'
 
 describe Oystercard do
 
-  let(:station) { double(:station) }
-  let(:station_2) { double(:station) }
-  let(:journey){ {:entry_station => station, :exit_station => station_2} }
+  let(:station1) { double(name: "some station", zone: 1)}
+  let(:station2) { double(name: "some other station", zone: 2) }
+  #let(:journey){ double(entry_station: station1, exit_station: station2) }
   default_topup = 10
 
   describe "#Balance" do
@@ -23,7 +23,7 @@ describe Oystercard do
     end
 
     it 'not be able to touch in when balance is below £1' do
-      expect{ subject.touch_in(station) }.to raise_error("Insufficient founds!")
+      expect{ subject.touch_in(station1) }.to raise_error("Insufficient founds!")
     end
 
   end
@@ -32,23 +32,11 @@ describe Oystercard do
 
     before do
       subject.top_up(default_topup)
-      subject.touch_in(station)
-    end
-
-    it "should set card to in journey when touched in" do
-      expect(subject).to be_in_journey    end
-
-    it "should set card to NOT be in journey when touched out" do
-      subject.touch_out(station)
-      expect(subject).not_to be_in_journey
+      subject.touch_in(station1)
     end
 
     it "is getting charged on touch out" do
-      expect{ subject.touch_out(station) }.to change{ subject.balance }.by -(Oystercard::MIN_FARE)
-    end
-
-    it "sets current station to nil on touch out" do
-      expect{ subject.touch_out(station) }.to change{ subject.station }.from(station).to(nil)
+      expect{ subject.touch_out(station2) }.to change{ subject.balance }.by -station2.zone
     end
 
   end
@@ -61,9 +49,9 @@ describe Oystercard do
 
     it "stores entry and exit stations" do
       subject.top_up(default_topup)
-      subject.touch_in(station)
-      subject.touch_out(station_2)
-      expect(subject.journeys).to include journey
+      subject.touch_in(station1)
+      subject.touch_out(station2)
+      expect(subject.journeys).to include ({entry_station: station1, exit_station: station2})
     end
 
   end
